@@ -1,18 +1,14 @@
-def danish(str)
-  str.sub(/\b(apple|blueberry|cherry)\b/, 'danish')
+def display(block)
+  block.call(">>>") # Passing the prefix argument to the block
 end
 
-p danish('An apple a day keeps the doctor away')
-# -> 'An danish a day keeps the doctor away'
+def test(&block)
+  puts "1"
+  display(block)
+  puts "2"
+end
 
-p danish('My favorite is blueberry pie')
-# -> 'My favorite is danish pie'
-
-p danish('The cherry of my eye')
-# -> 'The danish of my eye'
-
-p danish('apple. cherry. blueberry.')
-# -> 'danish. cherry. blueberry.'
-
-p danish('I love pineapple')
-# -> 'I love pineapple'
+test
+# => 1
+# >>>xyz
+# => 2

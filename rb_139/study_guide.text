@@ -1,0 +1,166 @@
+Lesson 1:
+
+Closures are chunks of code that bind to their surrounding artifacts. That is,
+they can remember and keep track of variables and methods in their bindings.
+Variables are part of a closure's binding if they are in scope at the time of
+the closure's creation and are invoked within the closure. Methods are part of a
+closure's binding if they are invoked within the closure, even if they not yet
+defined. However, the method must be defined prior to the invocation of the 
+closure, otherwise a NameError will be thrown when the compiler attempts to 
+execute the method. Methods and variables that are reassigned before invocation
+will be invoked with their current values - that is, closures keep track of the
+pointers themselves, not just the objects pointed to at the time of the 
+closure's creation.
+
+It is sometimes useful to think of a closure as an unnamed method that can be
+passed around and called.
+
+Types of closures in Ruby: Blocks, Procs, and Lambdas.
+
+Blocks are chunks of code contained within the keywords 'do' and 'end' or 
+between curly braces { } that are passed into methods. Thus, blocks are a type
+of argument that can be passed to a method call.
+
+Any method in ruby can take an implicit block. Depending on the method's 
+implementation, the method and its arguments might interact with the block or
+ignore it completely. 
+
+In order for a method to accept a block, it must use the 'yield' keyword. Yield
+is itself a method call and can be passed arguments. Yield will pass its 
+argument list into the block provided; if no block is provided, then an error
+will be thrown (LocalJumpError). Blocks do not have strict arity; if yield is
+given more arguments than the block has parameters, the extra arguments will 
+not be used. If yield is given fewer arguments than the block has parameters,
+then the unused parameters in the block will be assigned 'nil'. In order to 
+avoid jump errors, use the #block_given? method within flow control. For 
+example: yield(args) if block_given?
+
+Since yield is a method that executes a block, the return value of yield is the
+return value of the block. 
+
+We yield to blocks for two main reasons:
+(1) To defer implementation details to the time of invocation. Allowing the
+person or program invoking the method to decide how to use the method allows for
+much more powerful/flexible methods to be built. Obvious examples: #each, #map,
+#select, etc. Allowing the user to pass in entire blocks is much more flexible
+than allowing the user to pass in specific predetermined flags as arguments. 
+(2) Sandwich code - for instance, a method might open a filestream, yield the
+filestream to a block provided by the caller, then close the filestream. By 
+setting up the method to close the filestream automatically, we automate a 
+process that always needs to be done but is easily missed/forgotten.
+
+All methods can take implicit blocks, but methods can also be written to require
+a block using an explicit block parameter: &parameter_name
+For example: 
+  def test(&some_block)
+    does something with some_block
+  end
+The explicit block has to be named with an & in the argument list but has to be
+invoked without it in the method definition. The &block is a special parameter
+that converts the block argument to what we call a "simple" Proc object. Naming
+the block explicitly gives us the power to pass the block to another method. 
+You don't need to use the & once it's passed to another method - it's already
+been converted to a Proc object at that point. Since it's a Proc, it should be
+invoked with Proc#call. You can pass arguments to the explicit block call by
+passing them as arguments to call(). 
+
+Blocks cannot be returned from method calls, but Proc objects can be. This 
+allows us to store Proc objects in variables and call them repeatedly. Ex:
+
+def sequence
+  counter = 0
+  Proc.new { counter += 1 }
+end
+
+s1 = sequence
+p s1.call           # 1
+p s1.call           # 2
+p s1.call           # 3
+puts
+
+s2 = sequence
+p s2.call           # 1
+p s1.call           # 4 (note: this is s1)
+p s2.call           # 2
+
+Another ex:
+
+def name_generator
+  names = ['Phil', 'Bob', 'Shane']
+  Proc.new { names.shuffle.first }
+end
+
+s1 = name_generator
+s1.call             # returns a name from names
+s1.call             # returns a name from names
+s1.call             # returns a name from names
+
+
+
+Testing... is easy. Setup, Execute, Assert, Teardown.
+
+
+
+Ruby Toolbox: Version Managers, Gems, Bundler, Rake
+
+What gets installed with Ruby?
+  Core Library, Standard Library, irb, rake, gem command, rdoc and ri (documentation tools)
+
+Version Managers:
+  RVM and rbenv
+  These programs allow you to install, manage, and switch between versions of
+  Ruby. Having different versions allows you to work on different projects that
+  might have different requirements based on how/when they were created.
+  
+Gems:
+  Gems can be installed from the Standard Library or the remote Gem Libraries. 
+  Like Ruby, Gems have different versions; you can have multiple versions of a 
+  Gem installed on a particular version of Ruby. 
+  
+Bundler:
+  Using different versions of Ruby and Gems for different projects is useful but
+  can become quite a headache. Ruby has a Gem called Bundler to streamline this.
+  Bundler is a dependency manager - by giving it the specs you need for a Ruby
+  version and a set of Gems, Bundler will download all the necessary Gems 
+  (including Gems upon which your listed Gems depend) and make sure those 
+  versions are being run whenever you work on the project.
+  
+  In order to do this, Bundler uses a file called Gemfile. By adding your 
+  desired Ruby version and necessary Gems (with their versions) into a Gemfile
+  and running 'bundle install', bundler will find and install all necessary
+  Gems and compile this information into a file called Gemfile.lock. If you need
+  to make changes to your dependency list, you must edit Gemfile and run the
+  'bundle install' command again, creating a new Gemfile.lock file. Manually
+  changing the Gemfile.lock file will not produce the necessary changes.
+  
+  By adding "require 'bundler/setup'" at the beginning of your app, bundler
+  overrides the $LOAD_PATH variable and instead loads gems directly from the
+  Gemfile.lock file. This is how bundler ensures that the desired versions are
+  in use on your project.
+  
+  If you run into a dependency issue, where either require bundler/setup cannot
+  be added to the beginning of your app or you're using terminal commands where
+  the default version conflicts with a bundled version (such as rake), use the
+  'bundle exec' command.
+  
+Rake:
+  Rake is a Gem that allows programmers to create a file called Rakefile which
+  uses a DSL (Domain-Specific Language) to automate common, repetitive tasks. 
+  Some common Rake tasks:
+   - Creating directories and files
+   - Setting up and initializing databases
+   - Running tests
+   - Packaging an application and all related files for distribution
+   - Installing an application
+   - Performing common Git tasks
+   - Rebuilding files and directories based on changes to other files/directories
+  Rake tasks generally have a name, description, and execution. These tasks can
+  be run from the terminal / command line using the rake command followed by the
+  name of the desired task. Setting up tasks to be automated is efficient and
+  prevents common mistakes like typos, forgetting to increment version numbers
+  on release, etc.
+  
+gemspec
+  The .gemspec file contains a Gem's Specifications. This can include information
+  such as name, version, developer, description, filelist, etc. All published
+  RubyGems are required to include a .gemspec file.
